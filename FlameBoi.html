@@ -4,21 +4,71 @@
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
             <title>FlameBoi</title>
 			
-            <script type="text/javascript" src="../Common/webgl-utils.js"></script>
-	    <script type="text/javascript" src="../Common/initShaders.js"></script>
-	    <script type="text/javascript" src="../Common/MV.js"></script>
-	    <script type="text/javascript" src="FlameBoi.js"></script>
+			<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+			<script type="text/javascript" src="../Common/initShaders.js"></script>
+			<script type="text/javascript" src="../Common/MV.js"></script>
+			<script type="text/javascript" src="HalfPong.js"></script>
 
-            <script id="vertex-shader" type="x-shader/x-vertex">
-            //Vertex Shader Code Here
+            <script id="vertex-shader-player" type="x-shader/x-vertex">
+				attribute vec4 myPosition;
+				attribute vec4 blockPosition;
+				uniform mat4 Mt;
+				
+				void main() {
+					float xf;
+					float yf;
+					vec4 vi = myPosition;
+					vec4 vf = Mt * vi;
+					
+                    gl_Position = vf;
+					//gl_position = blockPosition;
+                    gl_PointSize = 1.0;
+                }
             </script>
 
-            <script id="fragment-shader" type="x-shader/x-fragment">
-            //Fragment Shader Code Here
+            <script id="fragment-shader-player" type="x-shader/x-fragment">
+				precision mediump float;
+				void main(){
+					gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
+				}
+			</script>
+			
+			<script id="vertex-shader-blocks" type="x-shader/x-vertex">
+				attribute vec4 myPosition;
+				void main() {
+                    gl_Position = myPosition;
+					gl_PointSize = 1.0;
+                }
             </script>
+
+            <script id="fragment-shader-blocks" type="x-shader/x-fragment">
+				precision mediump float;
+				//uniform vec4 myColor;
+				void main(){
+					gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
+				}
+			</script>
+			
+			<script id="vertex-shader-ball" type="x-shader/x-vertex">
+				attribute vec4 myPosition;
+				uniform mat4 Mt;
+				void main() {
+                    gl_Position = Mt*myPosition;
+					gl_PointSize = 1.0;
+                }
+            </script>
+
+            <script id="fragment-shader-ball" type="x-shader/x-fragment">
+				precision mediump float;
+				//uniform vec4 myColor;
+				void main(){
+					gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 );
+				}
+			</script>
+		
    </head>
    
-   <body onload = "initGL()">
+   <body onload = "initGL()" onkeydown = "moveBlockKeys(event)">
       <canvas id="gl-canvas" width = "512" height = "512"></canvas><br/>
    </body>
 </html>
