@@ -17,23 +17,28 @@ var bufferIdBlocks;
 var bufferIdBall;
 var tyb;
 var tyb;
-var xaxis;
-var yaxis;
+var xspeed;
+var yspeed;
 var speedx;
 var speedy;
 var angle;
+var maxHeight;
+var playing;
 
 function initGL(){
 	
 	//Initialize Variables
-	numOfRows = 3;
+	numOfRows = 1;
 	blocks_per_row = 5;
 	txp = 0.0;
 	typ = 0.0;
 	txb = 0.0;
 	tyb = 0.0;
-	xaxis = 0//Math.PI/2; //cos 0 = 1; cosPI/2 = 0
-	yaxis = -1//-Math.PI/2; //sin0 = 0 sinPI/2 = 1
+	playing = 0;
+	maxHeight = 1;
+	angle = Math.PI/2;
+	xspeed = 0; // * Math.cos(Math.PI/2); //cos 0 = 1; cosPI/2 = 0
+	yspeed = 0; // * -Math.sin(Math.PI/2); //sin0 = 0 sinPI/2 = 1
 	
 	speed = .1;
 	Mtp = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
@@ -88,13 +93,15 @@ function initGL(){
 		}
 	}
 	
+	maxHeight = 1-(numOfRows/10);
+	
 	bufferIdBlocks = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, bufferIdBlocks );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(arrayOfPointsBlocks), gl.STATIC_DRAW );
 			
 	var thetastart = 0;
 	var thetaend = 2 * Math.PI;
-	n = 5;
+	n = 20;
 	var thetastepsize = (thetaend - thetastart) / n;
 	var i;
 	var arrayOfPointsBall = [];
@@ -128,7 +135,20 @@ function moveBlockKeys(event){
 			console.log("HereB");
 		}
 		else if(theKeyCode == 32){ //Space
-			jumping = 0;
+			if(playing)
+			{
+				tyb = 0;
+				txb = 0;
+				xspeed = 0;
+				yspeed = 0;
+				playing = 0;
+			}
+			else
+			{
+				yspeed = -.1;
+				playing = 1;
+			}
+				
 		}
 }
 
@@ -162,7 +182,7 @@ function render(){
 	
 	var myPositionAttributePlayer = gl.getAttribLocation( program_player , "myPosition" );
     gl.vertexAttribPointer( myPositionAttributePlayer, 4, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( myPositionAttributePlayer );
+ gl.enableVertexAttribArray( myPositionAttributePlayer );
 		
 	gl.drawArrays( gl.TRIANGLE_FAN, 0, 4 );
 	
@@ -186,32 +206,36 @@ function render(){
 	xb = Mtb[12];
 	xpl = Mtp[12] - .2;
 	xpr = Mtp[12] + .2;
-
-	//console.log(x); 
-	//setTimeout(alert("4 seconds"),4000);
 	
-	if(yb <= -.8){
+	if(yb <= -.8){ //Ball hit players paddle OR missed 
 		if(xb >= xpl && xb <= xpr){ // hit players pattle
-			/*if(xb != (xpl + xpr)/2){
-				//doesnt hit directly in the middle
-				var posOnPaddle = (xpl + xpr)/2 - xb; //check
-				var partOfPaddle = posOnPaddle/(.2); // .4/2
-				var theta = partOfPaddle * (5*Math.PI/12);
-				speed = partOfPaddle*.3
-				
-			}
-			*/
-			
-			yaxis = -yaxis;
+			yspeed = -yspeed;
+			center = (xpl + xpr)/2;
+			xspeed = xspeed + (xb-center)/7;
 		}
 		else{
 			tyb = 0;
-			tyx = 0;
+			txb = 0;
+			xspeed = 0;
+			yspeed = 0;
 		}
 	}
 	
-	txb += (.1 * speed * xaxis);
-	tyb += (.1 * speed * yaxis);
+	if(yb >= maxHeight)
+	{
+		yspeed = -yspeed;
+		//center = (xpl + xpr)/2;
+		//xspeed = xspeed + (xb-center)/7;
+		
+	}
+	
+	if(xb <= -1 || xb >= 1)
+		xspeed = -xspeed;
+	
+	
+	txb += (.1 * xspeed);// * Math.cos(angle));
+	tyb += (.1 * yspeed);// * -Math.sin(angle));
+	console.log(angle);
 	
 	Mtb = [1.0, 
 		   0.0,
@@ -242,4 +266,4 @@ function render(){
 	
 	requestAnimFrame(render);
 	
-}
+}  
