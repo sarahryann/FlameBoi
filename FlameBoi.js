@@ -16,7 +16,7 @@ var bufferIdPlayer;
 var bufferIdBlocks;
 var bufferIdBall;
 var tyb;
-var tyb;
+var txb;
 var xspeed;
 var yspeed;
 var speedx;
@@ -24,25 +24,65 @@ var speedy;
 var angle;
 var maxHeight;
 var playing;
+var bounding_box_ball;
+var ballRightVertex;
+var ballLeftVertex;
 
 function initGL(){
 	
 	//Initialize Variables
-	numOfRows = 1;
+	numOfRows = 2;
 	blocks_per_row = 5;
 	txp = 0.0;
 	typ = 0.0;
 	txb = 0.0;
 	tyb = 0.0;
 	playing = 0;
-	maxHeight = 1;
 	angle = Math.PI/2;
 	xspeed = 0; // * Math.cos(Math.PI/2); //cos 0 = 1; cosPI/2 = 0
 	yspeed = 0; // * -Math.sin(Math.PI/2); //sin0 = 0 sinPI/2 = 1
 	
-	speed = .1;
-	Mtp = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-	Mtb= [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+	speed = .3;
+	Mtp = [
+			1, 
+			0,
+			0,
+			0,
+			
+			0,
+			1,
+			0,
+			0,
+			
+			0,
+			0,
+			1,
+			0,
+			
+			0,
+			0,
+			0,
+			1];
+	Mtb= [
+	1, 
+	0,
+	0, 
+	0,
+	
+	0,
+	1,
+	0,
+	0,
+	
+	0,
+	0,
+	1,
+	0,
+	
+	0,
+	0,
+	0,
+	1];
 	IM = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 	//Set up canvas
 	var canvas = document.getElementById( "gl-canvas" );
@@ -85,20 +125,47 @@ function initGL(){
 
 	for(var i = 1.0; i > (1-(numOfRows/10)); i = i - .1){
 		for(var j = -1.0; j < 1; j = j + .4){
-			p0 = vec4( j + .025, i - .025, 0, 1);
-			p1 = vec4( j + .025, i - .1 + .025, 0 , 1);
-			p2 = vec4( j + .4 - .025, i - .1 + .025, 0, 1);
-			p3 = vec4( j + .4 - .025, i - .025, 0 , 1);
-			arrayOfPointsBlocks.push(p0, p1, p2, p3);
+			p0 = vec4( j + .025, i - .025, 0, 1);//top left
+			p1 = vec4( j + .025, i - .1 + .025, 0 , 1);// bottom left
+			p2 = vec4( j + .4 - .025, i - .1 + .025, 0, 1);//bottom left
+			p3 = vec4( j + .4 - .025, i - .025, 0 , 1);//bottom left
+			arrayOfPointsBlocks.push(p0, p1, p2, p3); 
 		}
 	}
-	
-	maxHeight = 1-(numOfRows/10);
+	var vertexColors= [];
+	for(var i = 1.0; i > (1-(numOfRows/10)); i = i - .1){
+		for(var j = -1.0; j < 1; j = j + .4){
+			p0 = vec4(0.0, 0.0, 1.0, 1.0);//top left
+			p1 = vec4(0.0, 1.0, 0.0, 1.0);// bottom left
+			p2 = vec4(1.0, 0.0, 0.0, 1.0);//bottom left
+			p3 = vec4(1.0, 0.0, 0.0, 1.0);//bottom left
+			vertexColors.push(p0, p1, p2, p3);
+		}
+	}
+	var indexList=[];
+	for(var i =0;i<numOfRows*num_of_blocks*4;i=i+4)
+	{
+		indexList.push(i,i+1,i+2,
+					   i,i+2,i+3);
+	}
+	maxHeight =[1-(numOfRows/10), 1-(numOfRows/10), 1-(numOfRows/10), 1-(numOfRows/10), 1-(numOfRows/10)];
 	
 	bufferIdBlocks = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, bufferIdBlocks );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(arrayOfPointsBlocks), gl.STATIC_DRAW );
-			
+	
+	colorbufferblocks= gl.createBuffer();
+	gl.bindBuffer( gl.ARRAY_BUFFER, colorbufferblocks);
+	gl.bufferData( gl.ARRAY_BUFFER, flatten(vertexColors), gl.STATIC_DRAW );
+	
+	var myColor = gl.getAttribLocation(program_blocks, "myColor");
+	gl.vertexAttribPointer(myColor,4, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray( myColor );
+	
+	var iBuffer= gl.createBuffer();
+	gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, iBuffer);
+	gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indexList), gl.STATIC_DRAW );
+	
 	var thetastart = 0;
 	var thetaend = 2 * Math.PI;
 	n = 20;
@@ -113,12 +180,32 @@ function initGL(){
 		var p = vec2(x,y);
 		arrayOfPointsBall.push(p);
 	}
-	console.log(arrayOfPointsBall);
 	bufferIdBall = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, bufferIdBall );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(arrayOfPointsBall), gl.STATIC_DRAW );
 	
+	ballRightVertex=0;//this is the index value of the most right vertex of the ball
+	ballLeftVertex=1; //this is the index value of the most left vertex of the ball
 	
+	leftTemp=arrayOfPointsBall[1][0];
+	rightTemp=arrayOfPointsBall[0][0];
+	
+	//go through all ball verticies and find the values 
+	for(i=0; i< arrayOfPointsBall.length; i++)
+		{
+			if(rightTemp<arrayOfPointsBall[i][0])
+			{
+				rightTemp=arrayOfPointsBall[i][0];
+				ballRightVertex=i;
+				
+			}
+			else if(leftTemp>arrayOfPointsBall[i][0])
+			{
+				leftTemp=arrayOfPointsBall[i][0];
+				ballLeftVertex=i;
+				
+			}		
+		}
 	render();
 }; 
 
@@ -208,10 +295,10 @@ function render(){
 	xpr = Mtp[12] + .2;
 	
 	if(yb <= -.8){ //Ball hit players paddle OR missed 
-		if(xb >= xpl && xb <= xpr){ // hit players pattle
+		if(xb >= xpl-.1 && xb <= xpr+.1){ // hit players pattle //changed this value so that it actually hits the full paddle
 			yspeed = -yspeed;
 			center = (xpl + xpr)/2;
-			xspeed = xspeed + (xb-center)/7;
+			xspeed = xspeed + (xb-center)/4;
 		}
 		else{
 			tyb = 0;
@@ -220,14 +307,50 @@ function render(){
 			yspeed = 0;
 		}
 	}
-	
-	if(yb >= maxHeight)
+	//this if block checks what block column the ball currently is 
+	var currBlockIndex=0;
+	if(xb<-.6)
 	{
-		yspeed = -yspeed;
-		//center = (xpl + xpr)/2;
-		//xspeed = xspeed + (xb-center)/7;
-		
+		currBlockIndex=0;
 	}
+	else if(xb<-0.2)
+	{
+		currBlockIndex=1;
+	}
+	else if(xb<0.2)
+	{
+		currBlockIndex=2;
+	}
+	else if(xb<0.6)
+	{
+		currBlockIndex=3;
+	}
+	else if(xb<1)
+	{
+		currBlockIndex=4;
+	}
+	console.log(currBlockIndex);
+	if(yb >= maxHeight[currBlockIndex])
+	{
+		yspeed = -yspeed;         
+		var closestXVal=[0];
+		console.log(closestXVal);
+		maxHeight[currBlockIndex]=maxHeight[currBlockIndex]+.2;
+		/*for(i=0;i<arrayOfPointsBlocks.length;i++)
+		{
+			if(arrayOfPointsBlocks[i][0])
+			{
+			}
+		}*/
+	}
+	else if(yb>=1.0)
+	{
+		tyb = 0;
+			txb = 0;
+			xspeed = 0;
+			yspeed = 0; 
+	}
+	
 	
 	if(xb <= -1 || xb >= 1)
 		xspeed = -xspeed;
@@ -235,20 +358,23 @@ function render(){
 	
 	txb += (.1 * xspeed);// * Math.cos(angle));
 	tyb += (.1 * yspeed);// * -Math.sin(angle));
-	console.log(angle);
+	
 	
 	Mtb = [1.0, 
 		   0.0,
 		   0.0,
 		   0.0,
+		   
 		   0.0,
 		   1.0,
 	 	   0.0,
 		   0.0,
+		   
 		   0.0,
 		   0.0,
 		   1.0,
 		   0.0,
+		   
 		   txb,
 		   tyb,
 		   0.0,
@@ -266,4 +392,22 @@ function render(){
 	
 	requestAnimFrame(render);
 	
-}  
+}
+function detectCollision(Mat1,Mat2)
+{
+   //get the maximum value of the matricies
+   var Mat1_maxX=Mat1[0];
+   var Mat1_maxY=Mat1[1];
+   var Mat2_maxX=Mat1[0];
+   var Mat2_maxY=Mat1[1];
+   //get the minimum values of both matricies
+   var Mat1_minX=Mat1[0];
+   var Mat1_minY=Mat1[1];
+   var Mat2_minX=Mat1[0];
+   var Mat2_minY=Mat1[1];
+
+	for(i = 0; i < Mat1.length; i=i+4)
+	{
+	
+	} 
+}
