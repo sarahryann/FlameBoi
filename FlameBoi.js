@@ -335,7 +335,7 @@ function render(){
 		yspeed = -yspeed;         
 		var closestXVal=[0];
 		console.log(closestXVal);
-		maxHeight[currBlockIndex]=maxHeight[currBlockIndex]+.2;
+		maxHeight[currBlockIndex]=maxHeight[currBlockIndex]+.1;
 		/*for(i=0;i<arrayOfPointsBlocks.length;i++)
 		{
 			if(arrayOfPointsBlocks[i][0])
