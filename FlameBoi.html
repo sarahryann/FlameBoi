@@ -35,17 +35,22 @@
 			
 			<script id="vertex-shader-blocks" type="x-shader/x-vertex">
 				attribute vec4 myPosition;
+				attribute vec4 myColor;
+				varying vec4 vColor;
 				void main() {
                     gl_Position = myPosition;
 					gl_PointSize = 1.0;
+					
+					vColor=myColor;
+					
                 }
             </script>
 
             <script id="fragment-shader-blocks" type="x-shader/x-fragment">
 				precision mediump float;
-				//uniform vec4 myColor;
+				varying vec4 vColor;
 				void main(){
-					gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
+					gl_FragColor = vColor;
 				}
 			</script>
 			
