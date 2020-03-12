@@ -27,12 +27,19 @@ var playing;
 var bounding_box_ball;
 var ballRightVertex;
 var ballLeftVertex;
+var colorChanged;
+var blocksLeftInRow;
+var myColor;
+var vertexColor;
+var iBuffer;
+var indexList;
 
 function initGL(){
 	
 	//Initialize Variables
 	numOfRows = 2;
 	blocks_per_row = 5;
+	num_of_blocks = numOfRows * blocks_per_row;
 	txp = 0.0;
 	typ = 0.0;
 	txb = 0.0;
@@ -41,8 +48,7 @@ function initGL(){
 	angle = Math.PI/2;
 	xspeed = 0; // * Math.cos(Math.PI/2); //cos 0 = 1; cosPI/2 = 0
 	yspeed = 0; // * -Math.sin(Math.PI/2); //sin0 = 0 sinPI/2 = 1
-	
-	speed = .3;
+		
 	Mtp = [
 			1, 
 			0,
@@ -64,26 +70,38 @@ function initGL(){
 			0,
 			1];
 	Mtb= [
-	1, 
-	0,
-	0, 
-	0,
+		1, 
+		0,
+		0, 
+		0,
+		
+		0,
+		1,
+		0,
+		0,
+		
+		0,
+		0,
+		1,
+		0,
+		
+		0,
+		0,
+		0,
+		1];
+		
+	colorChanged = [];
+	blocksLeftInRow = [];
+	for( var i = 0; i<num_of_blocks; i++ )
+	{
+		colorChanged[i] = 0;
+	}
 	
-	0,
-	1,
-	0,
-	0,
-	
-	0,
-	0,
-	1,
-	0,
-	
-	0,
-	0,
-	0,
-	1];
-	IM = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+	for( var i = 0; i<num_of_blocks; i++ )
+	{
+		blocksLeftInRow[1] = numOfRows;
+	}
+		
 	//Set up canvas
 	var canvas = document.getElementById( "gl-canvas" );
     gl = WebGLUtils.setupWebGL( canvas );
@@ -106,8 +124,8 @@ function initGL(){
 	program_ball = 
 	initShaders( gl, "vertex-shader-ball", "fragment-shader-ball" );
 
-	var arrayOfPointsPlayerBlock= [];
 	//Initialize player blocks
+	var arrayOfPointsPlayerBlock= [];
 	var p0 = vec4(-0.2, -0.95, 0, 1);
     var p1 = vec4(-0.2, -0.85, 0, 1);
 	var p2 = vec4(0.2, -0.85, 0, 1);
@@ -132,17 +150,17 @@ function initGL(){
 			arrayOfPointsBlocks.push(p0, p1, p2, p3); 
 		}
 	}
-	var vertexColors= [];
+	vertexColors= [];
 	for(var i = 1.0; i > (1-(numOfRows/10)); i = i - .1){
 		for(var j = -1.0; j < 1; j = j + .4){
-			p0 = vec4(0.0, 0.0, 1.0, 1.0);//top left
-			p1 = vec4(0.0, 1.0, 0.0, 1.0);// bottom left
+			p0 = vec4(1.0, 0.0, 0.0, 1.0);//top left
+			p1 = vec4(1.0, 0.0, 0.0, 1.0);// bottom left
 			p2 = vec4(1.0, 0.0, 0.0, 1.0);//bottom left
 			p3 = vec4(1.0, 0.0, 0.0, 1.0);//bottom left
 			vertexColors.push(p0, p1, p2, p3);
 		}
 	}
-	var indexList=[];
+	indexList=[];
 	for(var i =0;i<numOfRows*num_of_blocks*4;i=i+4)
 	{
 		indexList.push(i,i+1,i+2,
@@ -158,11 +176,11 @@ function initGL(){
 	gl.bindBuffer( gl.ARRAY_BUFFER, colorbufferblocks);
 	gl.bufferData( gl.ARRAY_BUFFER, flatten(vertexColors), gl.STATIC_DRAW );
 	
-	var myColor = gl.getAttribLocation(program_blocks, "myColor");
+	myColor = gl.getAttribLocation(program_blocks, "myColor");
 	gl.vertexAttribPointer(myColor,4, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray( myColor );
 	
-	var iBuffer= gl.createBuffer();
+	iBuffer= gl.createBuffer();
 	gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, iBuffer);
 	gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indexList), gl.STATIC_DRAW );
 	
@@ -215,11 +233,8 @@ function moveBlockKeys(event){
 		//console.log(theKeyCode);
 		if( theKeyCode == 65 ){ //A
 			txp = txp - 0.1;
-			console.log("HereA");
-
 		}else if(theKeyCode == 68 ){ //D
 			txp = txp + 0.1;
-			console.log("HereB");
 		}
 		else if(theKeyCode == 32){ //Space
 			if(playing)
@@ -232,7 +247,7 @@ function moveBlockKeys(event){
 			}
 			else
 			{
-				yspeed = -.1;
+				yspeed = -.3;
 				playing = 1;
 			}
 				
@@ -269,7 +284,7 @@ function render(){
 	
 	var myPositionAttributePlayer = gl.getAttribLocation( program_player , "myPosition" );
     gl.vertexAttribPointer( myPositionAttributePlayer, 4, gl.FLOAT, false, 0, 0 );
- gl.enableVertexAttribArray( myPositionAttributePlayer );
+	gl.enableVertexAttribArray( myPositionAttributePlayer );
 		
 	gl.drawArrays( gl.TRIANGLE_FAN, 0, 4 );
 	
@@ -308,48 +323,87 @@ function render(){
 		}
 	}
 	//this if block checks what block column the ball currently is 
-	var currBlockIndex=0;
-	if(xb<-.6)
+	var currColumnIndex = 0;
+	if(xb < -.6)
 	{
-		currBlockIndex=0;
+		currColumnIndex = 0;
 	}
-	else if(xb<-0.2)
+	else if(xb < -0.2)
 	{
-		currBlockIndex=1;
+		currColumnIndex = 1;
 	}
-	else if(xb<0.2)
+	else if(xb < 0.2)
 	{
-		currBlockIndex=2;
+		currColumnIndex = 2;
 	}
-	else if(xb<0.6)
+	else if(xb < 0.6)
 	{
-		currBlockIndex=3;
+		currColumnIndex = 3;
 	}
-	else if(xb<1)
+	else if(xb < 1)
 	{
-		currBlockIndex=4;
+		currColumnIndex = 4;
 	}
-	console.log(currBlockIndex);
-	if(yb >= maxHeight[currBlockIndex])
+		
+	console.log(currColumnIndex);
+	if(yb >= maxHeight[currColumnIndex])
 	{
 		yspeed = -yspeed;         
 		var closestXVal=[0];
 		console.log(closestXVal);
-		maxHeight[currBlockIndex]=maxHeight[currBlockIndex]+.1;
+		maxHeight[currColumnIndex]=maxHeight[currColumnIndex]+.1;
 		/*for(i=0;i<arrayOfPointsBlocks.length;i++)
 		{
 			if(arrayOfPointsBlocks[i][0])
 			{
 			}
 		}*/
+		
+		var arrIdx = currColumnIndex + ((blocksLeftInRow[currColumnIndex]-1)*5);
+		blocksLeftInRow[currColumnIndex] = blocksLeftInRow[currColumnIndex] - 1;
+
+		vertexColors = [];
+		for(var i = 0; i < num_of_blocks; i = i + 1){
+			if(colorChanged[i] == 0){
+				p0 = vec4(1.0, 0.0, 0.0, 1.0);//top left
+				p1 = vec4(1.0, 0.0, 0.0, 1.0);// bottom left
+				p2 = vec4(1.0, 0.0, 0.0, 1.0);//bottom left
+				p3 = vec4(1.0, 0.0, 0.0, 1.0);//bottom left
+			}
+			else{
+				p0 = vec4(0.0, 0.0, 1.0, 1.0);//top left
+				p1 = vec4(0.0, 0.0, 1.0, 1.0);// bottom left
+				p2 = vec4(0.0, 0.0, 1.0, 1.0);//bottom left
+				p3 = vec4(0.0, 0.0, 1.0, 1.0);//bottom left
+			}
+			vertexColors.push(p0, p1, p2, p3);
+		}
+		colorbufferblocks= gl.createBuffer();
+		gl.bindBuffer( gl.ARRAY_BUFFER, colorbufferblocks);
+		gl.bufferData( gl.ARRAY_BUFFER, flatten(vertexColors), gl.STATIC_DRAW );
+		
+		myColor = gl.getAttribLocation(program_blocks, "myColor");
+		gl.vertexAttribPointer(myColor, 4, gl.FLOAT, false, 0, 0);
+		gl.enableVertexAttribArray( myColor );
+		
+		iBuffer= gl.createBuffer();
+		gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, iBuffer);
+		gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indexList), gl.STATIC_DRAW );
+		
+		console.log(arrIdx);
 	}
-	else if(yb>=1.0)
+	else if(yb>0.9)
 	{
+		//yspeed = -yspeed;
 		tyb = 0;
-			txb = 0;
-			xspeed = 0;
-			yspeed = 0; 
+		txb = 0;
+		xspeed = 0;
+		yspeed = 0;  
 	}
+	
+	
+	
+
 	
 	
 	if(xb <= -1 || xb >= 1)
@@ -379,6 +433,7 @@ function render(){
 		   tyb,
 		   0.0,
 		   1.0];
+		   
 	MtbUniform = gl.getUniformLocation( program_ball, "Mt" );
 	gl.uniformMatrix4fv( MtbUniform, false, flatten(Mtb) );
 	
