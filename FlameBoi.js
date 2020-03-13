@@ -110,7 +110,7 @@ function initGL(){
 
 	//Set up viewpoint & Clear background color
     gl.viewport( 0, 0, 512, 512);
-    gl.clearColor( 0.0, 0.0, 1.0, 1.0 );
+    gl.clearColor( 0.0, 0.0, 1.0, 0.5 );
 	
 	//Force WebGl to clear color buffer
 	gl.clear( gl.COLOR_BUFFER_BIT );
@@ -154,10 +154,10 @@ function initGL(){
 	vertexColors= [];
 	for(var i = 1.0; i > (1-(numOfRows/10)); i = i - .1){
 		for(var j = -1.0; j < 1; j = j + .4){
-			p0 = vec4(0.0, 1.0, 0.0, 1.0);//top left
-			p1 = vec4(0.0, 1.0, 0.0, 1.0);// bottom left
-			p2 = vec4(0.0, 1.0, 0.0, 1.0);//bottom right
-			p3 = vec4(0.0, 1.0, 0.0, 1.0);//top right
+			p0 = vec4(0.0, 1.0, 0.0, 0.4);//top left
+			p1 = vec4(0.0, 1.0, 0.0, 0.4);// bottom left
+			p2 = vec4(0.0, 1.0, 0.0, 0.4);//bottom right
+			p3 = vec4(0.0, 1.0, 0.0, 0.4);//top right
 			vertexColors.push(p0, p1, p2, p3);
 		}
 	}
@@ -377,10 +377,10 @@ function render(){
 		blocksLeftInRow[currColumnIndex] = blocksLeftInRow[currColumnIndex] - 1;
 
 		//changes the 4 verticies that are associated with the corresponding block
-		vertexColors[arrIdx*4]=vec4(0.0, 0.0, 1.0, 1.0); //top left
-		vertexColors[arrIdx*4+1]=vec4(0.0, 0.0, 1.0, 1.0);//bottom left
-		vertexColors[arrIdx*4+2]=vec4(0.0, 0.0, 1.0, 1.0);//bottom right
-		vertexColors[arrIdx*4+3]=vec4(0.0, 0.0, 1.0, 1.0);//top right
+		vertexColors[arrIdx*4]=vec4(0.0, 0.0, 1.0, 0.5 ); //top left
+		vertexColors[arrIdx*4+1]=vec4(0.0, 0.0, 1.0, 0.5 );//bottom left
+		vertexColors[arrIdx*4+2]=vec4(0.0, 0.0, 1.0, 0.5 );//bottom right
+		vertexColors[arrIdx*4+3]=vec4(0.0, 0.0, 1.0, 0.5 );//top right
 		
 		//pushes the entire array vertexColors into the vertexshader
 		colorbufferblocks= gl.createBuffer();
