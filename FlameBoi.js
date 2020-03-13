@@ -1,3 +1,4 @@
+
 var gl;
 var numOfRows;
 var block_per_row;
@@ -256,7 +257,6 @@ function moveBlockKeys(event){
 
 function render(){
 	gl.clear(gl.COLOR_BUFFER_BIT);
-	
 	//Use player program first
 	gl.useProgram(program_player);
 	
@@ -382,23 +382,11 @@ function render(){
 		var arrIdx = currColumnIndex + ((blocksLeftInRow[currColumnIndex]-1)*5);
 		blocksLeftInRow[currColumnIndex] = blocksLeftInRow[currColumnIndex] - 1;
 
-		vertexColors = [];
-		for(var i = 0; i < num_of_blocks; i = i + 1){
-			if(colorChanged[i] == 0){ //if the color hasnt changed, push 4 red verticies
-				p0 = vec4(1.0, 0.0, 0.0, 1.0);//top left
-				p1 = vec4(1.0, 0.0, 0.0, 1.0);// bottom left
-				p2 = vec4(1.0, 0.0, 0.0, 1.0);//bottom left
-				p3 = vec4(1.0, 0.0, 0.0, 1.0);//bottom left
-			}
-			else{ // if color has changed, push 4 blue verticies
-				p0 = vec4(0.0, 0.0, 1.0, 1.0);//top left
-				p1 = vec4(0.0, 0.0, 1.0, 1.0);// bottom left
-				p2 = vec4(0.0, 0.0, 1.0, 1.0);//bottom left
-				p3 = vec4(0.0, 0.0, 1.0, 1.0);//bottom left
-			}
-			vertexColors.push(p0, p1, p2, p3);
-		}
-		/*
+		vertexColors[arrIdx*4]=vec4(0.0, 0.0, 1.0, 1.0);
+		vertexColors[arrIdx*4+1]=vec4(0.0, 0.0, 1.0, 1.0);
+		vertexColors[arrIdx*4+2]=vec4(0.0, 0.0, 1.0, 1.0);
+		vertexColors[arrIdx*4+3]=vec4(0.0, 0.0, 1.0, 1.0);
+
 		colorbufferblocks= gl.createBuffer();
 		gl.bindBuffer( gl.ARRAY_BUFFER, colorbufferblocks);
 		gl.bufferData( gl.ARRAY_BUFFER, flatten(vertexColors), gl.STATIC_DRAW );
@@ -410,8 +398,7 @@ function render(){
 		iBuffer= gl.createBuffer();
 		gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, iBuffer);
 		gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indexList), gl.STATIC_DRAW );
-		*/
-		console.log(arrIdx);
+
 	}
 	else if(yb>0.9)
 	{
