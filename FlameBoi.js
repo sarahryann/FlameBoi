@@ -146,18 +146,18 @@ function initGL(){
 		for(var j = -1.0; j < 1; j = j + .4){
 			p0 = vec4( j + .025, i - .025, 0, 1);//top left
 			p1 = vec4( j + .025, i - .1 + .025, 0 , 1);// bottom left
-			p2 = vec4( j + .4 - .025, i - .1 + .025, 0, 1);//bottom left
-			p3 = vec4( j + .4 - .025, i - .025, 0 , 1);//bottom left
+			p2 = vec4( j + .4 - .025, i - .1 + .025, 0, 1);//bottom right
+			p3 = vec4( j + .4 - .025, i - .025, 0 , 1);//top right
 			arrayOfPointsBlocks.push(p0, p1, p2, p3); 
 		}
 	}
 	vertexColors= [];
 	for(var i = 1.0; i > (1-(numOfRows/10)); i = i - .1){
 		for(var j = -1.0; j < 1; j = j + .4){
-			p0 = vec4(1.0, 0.0, 0.0, 1.0);//top left
-			p1 = vec4(1.0, 0.0, 0.0, 1.0);// bottom left
-			p2 = vec4(1.0, 0.0, 0.0, 1.0);//bottom left
-			p3 = vec4(1.0, 0.0, 0.0, 1.0);//bottom left
+			p0 = vec4(0.0, 1.0, 0.0, 1.0);//top left
+			p1 = vec4(0.0, 1.0, 0.0, 1.0);// bottom left
+			p2 = vec4(0.0, 1.0, 0.0, 1.0);//bottom right
+			p3 = vec4(0.0, 1.0, 0.0, 1.0);//top right
 			vertexColors.push(p0, p1, p2, p3);
 		}
 	}
@@ -365,28 +365,24 @@ function render(){
 		currColumnIndex = 4;
 	}
 		
-	//console.log(currColumnIndex);
+	
 	if(yb >= maxHeight[currColumnIndex])
 	{
 		yspeed = -yspeed;         
 		var closestXVal=[0];
-		console.log(closestXVal);
+		
 		maxHeight[currColumnIndex]=maxHeight[currColumnIndex]+.1;
-		/*for(i=0;i<arrayOfPointsBlocks.length;i++)
-		{
-			if(arrayOfPointsBlocks[i][0])
-			{
-			}
-		}*/
-		console.log(blocksLeftInRow[currColumnIndex]);
+
 		var arrIdx = currColumnIndex + ((blocksLeftInRow[currColumnIndex]-1)*5);
 		blocksLeftInRow[currColumnIndex] = blocksLeftInRow[currColumnIndex] - 1;
 
-		vertexColors[arrIdx*4]=vec4(0.0, 0.0, 1.0, 1.0);
-		vertexColors[arrIdx*4+1]=vec4(0.0, 0.0, 1.0, 1.0);
-		vertexColors[arrIdx*4+2]=vec4(0.0, 0.0, 1.0, 1.0);
-		vertexColors[arrIdx*4+3]=vec4(0.0, 0.0, 1.0, 1.0);
-
+		//changes the 4 verticies that are associated with the corresponding block
+		vertexColors[arrIdx*4]=vec4(0.0, 0.0, 1.0, 1.0); //top left
+		vertexColors[arrIdx*4+1]=vec4(0.0, 0.0, 1.0, 1.0);//bottom left
+		vertexColors[arrIdx*4+2]=vec4(0.0, 0.0, 1.0, 1.0);//bottom right
+		vertexColors[arrIdx*4+3]=vec4(0.0, 0.0, 1.0, 1.0);//top right
+		
+		//pushes the entire array vertexColors into the vertexshader
 		colorbufferblocks= gl.createBuffer();
 		gl.bindBuffer( gl.ARRAY_BUFFER, colorbufferblocks);
 		gl.bufferData( gl.ARRAY_BUFFER, flatten(vertexColors), gl.STATIC_DRAW );
@@ -451,22 +447,4 @@ function render(){
 	
 	requestAnimFrame(render);
 	
-}
-function detectCollision(Mat1,Mat2)
-{
-   //get the maximum value of the matricies
-   var Mat1_maxX=Mat1[0];
-   var Mat1_maxY=Mat1[1];
-   var Mat2_maxX=Mat1[0];
-   var Mat2_maxY=Mat1[1];
-   //get the minimum values of both matricies
-   var Mat1_minX=Mat1[0];
-   var Mat1_minY=Mat1[1];
-   var Mat2_minX=Mat1[0];
-   var Mat2_minY=Mat1[1];
-
-	for(i = 0; i < Mat1.length; i=i+4)
-	{
-	
-	} 
 }
