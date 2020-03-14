@@ -10,21 +10,21 @@ Use keys 'A' and 'D' to move the players' paddle on the bottom of the canvas lef
 
 Press the spacebar to begin the game, the ball will begin travelling down, towards the players' paddle for the player to hit. The angle in which the ball bounces off the paddle at depends on the distance away from the center the ball was hit. 
 
-The player initailly starts with 3 lives. If the player missed the ball, or the player does not hit any blocks on the top row, the player looses a life and the ball restarts at the senter of the screen. If the player runs out of lives, all blocks are reset and the player must start over. If the player hits all blocks without loosing their 3 lives, the player has won and the game will reset.
+The player initially starts with 3 lives. If the player missed the ball, or the player does not hit any blocks on the top row, the player loses a life and the ball restarts at the center of the screen. If the player runs out of lives, all blocks are reset and the player must start over. If the player hits all blocks without losing their 3 lives, the player has won and the game will reset.
 
 
 BLOCKS (Setup and implementation)
-The amount blocks initalizes depends on the amount of blocks per row, and amount of rows variable in the js file. The game will typically be played with 5 blocks per row and 2 rows. In this case, all 10 blocks will be stored in the same buffer and initialized to the same color.
+The amount blocks initializes depends on the amount of blocks per row, and amount of rows variable in the js file. The game will typically be played with 5 blocks per row and 2 rows. In this case, all 10 blocks will be stored in the same buffer and initialized to the same color.
 
-A variable name "maxHeight" keeps track of the maximum height the ball can hit in that particular column. Once the ball hits a block, the color is changed to the backgound color and the max height is incremented, allowing the ball to travel throught the invisible block.
+A variable name “maxHeight” keeps track of the maximum height the ball can hit in that particular column. Once the ball hits a block, the color is changed to the background color and the max height is incremented, allowing the ball to travel through the invisible block.
 
-If the game restarts (due to the player loosing all their lifes OR the player winning), all the colors blocks turn to their original color and max height will be at the lowest block.
+If the game restarts (due to the player losing all their lives OR the player winning), all the colors blocks turn to their original color and max height will be at the lowest block.
 
 
 BALL (Setup and implementation)
 The ball starts in the center of the canvas. Once the game starts (space bar is hit), the ball begins travelling downwards. If the ball hits one of the blocks or the side of the screen, the y-value of travel or the x-value of travel is negated accordingly. If the ball hits the players paddle, the y value of travel is negated however the x value changes based on where on the paddle the ball had hit.
 
-Each time the game restarts (due to the player loosing all their lives OR the player winning), the ball resets stationary in the middle of tbe screen.
+Each time the game restarts (due to the player losing all their lives OR the player winning), the ball resets stationary in the middle of the screen.
 
 PLAYER PADDLE (Setup and implementation)
-The paddle is initally set up in the center of the screen and can be used by pressing keys A and D. 
+The paddle is initially set up in the center of the screen and can be used by pressing keys A and D.
